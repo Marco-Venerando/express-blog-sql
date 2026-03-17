@@ -11,12 +11,28 @@ function index(req, res) {
   });
 }
 // SHOW
+// SHOW
 function show(req, res) {
   const id = parseInt(req.params.id);
 
-  const post = posts.find((post) => post.id === id);
+  const sql = "SELECT * FROM posts WHERE id = ?";
 
-  res.json(post);
+  connection.query(sql, [id], (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        error: "Errore del server",
+      });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        error: "Post non trovato",
+      });
+    }
+
+    res.json(results[0]);
+  });
 }
 // CREATE
 function create(req, res) {
@@ -63,13 +79,24 @@ function update(req, res) {
 function destroy(req, res) {
   const id = parseInt(req.params.id);
 
-  const index = posts.findIndex((post) => post.id === id);
+  const sql = "DELETE FROM posts WHERE id = ?";
 
-  posts.splice(index, 1);
+  connection.query(sql, [id], (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        error: "Errore del server",
+      });
+    }
 
-  console.log(posts);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        error: "Post non trovato",
+      });
+    }
 
-  res.sendStatus(204);
+    res.sendStatus(204);
+  });
 }
 module.exports = {
   index,
